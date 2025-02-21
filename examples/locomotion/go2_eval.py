@@ -15,12 +15,13 @@ def main():
     parser.add_argument("--ckpt", type=int, default=100)
     args = parser.parse_args()
 
-    gs.init()
+    gs.init(backend=gs.cpu)  # Genesis uses CPU backend
 
     log_dir = f"logs/{args.exp_name}"
     env_cfg, obs_cfg, reward_cfg, command_cfg, train_cfg = pickle.load(open(f"logs/{args.exp_name}/cfgs.pkl", "rb"))
     reward_cfg["reward_scales"] = {}
 
+    # Explicitly set device to CPU for Go2Env
     env = Go2Env(
         num_envs=1,
         env_cfg=env_cfg,
@@ -28,12 +29,19 @@ def main():
         reward_cfg=reward_cfg,
         command_cfg=command_cfg,
         show_viewer=True,
+        device="cpu",
     )
 
-    runner = OnPolicyRunner(env, train_cfg, log_dir, device="cuda:0")
+    # Initialize runner with CPU device
+    runner = OnPolicyRunner(env, train_cfg, log_dir, device="cpu")
     resume_path = os.path.join(log_dir, f"model_{args.ckpt}.pt")
-    runner.load(resume_path)
-    policy = runner.get_inference_policy(device="cuda:0")
+
+    # Load the model manually with map_location to remap CUDA tensors to CPU
+    checkpoint = torch.load(resume_path, map_location=torch.device("cpu"))
+    runner.alg.actor_critic.load_state_dict(checkpoint["model_state_dict"])  # Load the actor-critic weights
+
+    # Get the inference policy for CPU
+    policy = runner.get_inference_policy(device="cpu")
 
     obs, _ = env.reset()
     with torch.no_grad():
@@ -44,8 +52,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-"""
-# evaluation
-python examples/locomotion/go2_eval.py -e go2-walking -v --ckpt 100
-"""

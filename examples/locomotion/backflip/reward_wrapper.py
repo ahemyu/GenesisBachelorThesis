@@ -233,7 +233,19 @@ class Backflip(Go2):
     def _reward_ang_vel_y(self):
         current_time = self.episode_length_buf * self.dt
         ang_vel = -self.base_ang_vel[:, 1].clamp(max=7.2, min=-7.2)
-        return ang_vel * torch.logical_and(current_time > 0.5, current_time < 1.0)
+        
+        # Create phase masks using tensor operations
+        prep_phase = (current_time < 0.3).float()
+        main_phase = torch.logical_and(current_time >= 0.3, current_time < 0.7).float()
+        landing_phase = (current_time >= 0.7).float()
+        
+        # Compute phase-specific rewards
+        prep_reward = -ang_vel * prep_phase
+        main_reward = (ang_vel * 2.0) * main_phase
+        landing_reward = -torch.abs(ang_vel) * landing_phase
+        
+        # Combine rewards
+        return prep_reward + main_reward + landing_reward
 
     def _reward_ang_vel_z(self):
         return torch.abs(self.base_ang_vel[:, 2])
@@ -242,6 +254,12 @@ class Backflip(Go2):
         current_time = self.episode_length_buf * self.dt
         lin_vel = self.robot.get_vel()[:, 2].clamp(max=3)
         return lin_vel * torch.logical_and(current_time > 0.5, current_time < 0.75)
+    
+    def _reward_landing_orientation(self):
+        current_time = self.episode_length_buf * self.dt
+        landing_phase = (current_time > 0.8).float()
+        upright_alignment = torch.abs(self.projected_gravity[:, 2] - 1.0)
+        return -upright_alignment * landing_phase
 
     def _reward_height_control(self):
         # Penalize non flat base orientation

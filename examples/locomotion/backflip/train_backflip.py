@@ -20,12 +20,12 @@ def get_train_cfg(args):
         'algorithm': {
             'clip_param': 0.2,
             'desired_kl': 0.01,
-            'entropy_coef': 0.01,
+            'entropy_coef': 0.02,
             'gamma': 0.99,
             'lam': 0.95,
-            'learning_rate': 0.001,
+            'learning_rate': 0.003,
             'max_grad_norm': 1.0,
-            'num_learning_epochs': 5,
+            'num_learning_epochs': 8,
             'num_mini_batches': 4,
             'schedule': 'adaptive',
             'use_clipped_value_loss': True,
@@ -68,19 +68,20 @@ def get_cfgs():
         'num_actions': 12,
         'num_dofs': 12,
         # joint/link names
+        # start in a crouched position to ease the jump 
         'default_joint_angles': {  # [rad]
-            'FL_hip_joint': 0.0,
-            'FR_hip_joint': 0.0,
-            'RL_hip_joint': 0.0,
-            'RR_hip_joint': 0.0,
-            'FL_thigh_joint': 0.8,
-            'FR_thigh_joint': 0.8,
-            'RL_thigh_joint': 1.0,
-            'RR_thigh_joint': 1.0,
-            'FL_calf_joint': -1.5,
-            'FR_calf_joint': -1.5,
-            'RL_calf_joint': -1.5,
-            'RR_calf_joint': -1.5,
+            'FL_hip_joint': 0.1,
+            'FR_hip_joint': 0.1,
+            'RL_hip_joint': 0.1,
+            'RR_hip_joint': 0.1,
+            'FL_thigh_joint': 1.0,
+            'FR_thigh_joint': 1.0,
+            'RL_thigh_joint': 1.2,
+            'RR_thigh_joint': 1.2,
+            'FL_calf_joint': -1.8,
+            'FR_calf_joint': -1.8,
+            'RL_calf_joint': -1.8,
+            'RR_calf_joint': -1.8,
         },
         'dof_names': [
             'FR_hip_joint',
@@ -115,7 +116,7 @@ def get_cfgs():
         'push_interval_s': -1,
         'max_push_vel_xy': 1.0,
         # time (second)
-        'episode_length_s': 2.0,
+        'episode_length_s': 2.5,
         'resampling_time_s': 4.0,
         'command_type': 'ang_vel_yaw',  # 'ang_vel_yaw' or 'heading'
         'action_scale': 0.5,
@@ -164,16 +165,18 @@ def get_cfgs():
     reward_cfg = {
         'soft_dof_pos_limit': 0.9,
         'reward_scales': {
-            'ang_vel_y': 5.0,
+            'ang_vel_y': 8.0,
             'ang_vel_z': -1.0,
-            'lin_vel_z': 20.0,
+            'lin_vel_z': 15.0,
             'orientation_control': -1.0,
             'feet_height_before_backflip': -30.0,
-            'height_control': -10.0,
+            'height_control': -5.0,
             'actions_symmetry': -0.1,
             'gravity_y': -10.0,
             'feet_distance': -1.0,
             'action_rate': -0.001,
+            'landing_orientation': 5.0,  # New reward scale
+
         },
     }
     command_cfg = {

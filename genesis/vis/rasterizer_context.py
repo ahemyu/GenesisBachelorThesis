@@ -5,11 +5,8 @@ import genesis.utils.geom as gu
 import genesis.utils.mesh as mu
 import genesis.utils.particle as pu
 
-try:
-    from genesis.ext import pyrender, trimesh
-    from genesis.ext.pyrender.jit_render import JITRenderer
-except Exception as e:
-    print(f"[Error]: {e}\n")
+from genesis.ext import pyrender, trimesh
+from genesis.ext.pyrender.jit_render import JITRenderer
 from genesis.utils.misc import tensor_to_array
 
 
@@ -72,12 +69,7 @@ class RasterizerContext:
             n_envs=self.n_rendered_envs,
         )
 
-        if gs.platform != "Windows":
-            self.jit = JITRenderer(self._scene, [], [])
-        else:
-            from genesis.ext.pyrender.non_jit_renderer import SimpleNonJITRenderer
-
-            self.jit = SimpleNonJITRenderer(self._scene, [], [])
+        self.jit = JITRenderer(self._scene, [], [])
 
         # nodes
         self.world_frame_node = None

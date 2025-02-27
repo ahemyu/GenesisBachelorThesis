@@ -63,7 +63,7 @@ def main():
         checkpoint = torch.load(resume_path, map_location="cpu")
         runner.alg.actor_critic.load_state_dict(checkpoint["model_state_dict"])
         runner.alg.optimizer.load_state_dict(checkpoint["optimizer_state_dict"])
-        runner.current_learning_iteration = checkpoint["iteration"]
+        # runner.current_learning_iteration = checkpoint["iteration"]
 
         path = os.path.join(log_dir, "exported")
         export_policy_as_jit(runner.alg.actor_critic, path, args.exp_name + f"_ckpt{args.ckpt}")
@@ -91,5 +91,5 @@ if __name__ == "__main__":
 
 """
 # Evaluation command
-python eval_backflip.py -e backflip --ckpt 1000 --episodes 5 --record
+python examples/locomotion/backflip/eval_backflip.py -e backflip_v2 --ckpt 1000 --record  
 """
